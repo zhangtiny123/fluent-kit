@@ -2,16 +2,22 @@ public enum ModelError: Error {
     case missingField(name: String)
 }
 
-public struct ModelField<Model, Value>: ModelProperty
-    where Model: FluentKit.Model, Value: Codable
+@propertyDelegate
+public final class Field<Value>: Property
+    where Value: Codable
 {
     public var type: Any.Type {
         return Value.self
     }
+
+    public var value: Value {
+        get { fatalError() }
+        set { fatalError() }
+    }
     
     public var constraints: [DatabaseSchema.FieldConstraint]
     
-    public let name: String
+    public let name: String?
     
 //    public var path: [String] {
 //        return self.model.storage.path + [self.name]
@@ -23,37 +29,31 @@ public struct ModelField<Model, Value>: ModelProperty
     struct Interface: Codable {
         let name: String
     }
-    
-    public init(
-        _ name: String,
-        dataType: DatabaseSchema.DataType? = nil,
-        constraints: DatabaseSchema.FieldConstraint...
-    ) {
-        self.name = name
+
+    public convenience init() {
+        self.init(dataType: nil)
+    }
+
+    public init(dataType: DatabaseSchema.DataType?) {
+        self.name = nil
         self.dataType = dataType
-        self.constraints = constraints
+        self.constraints = []
     }
 
-    func cached(from output: DatabaseOutput) throws -> Any? {
-        guard output.contains(field: self.name) else {
-            return nil
-        }
-        return try output.decode(field: self.name, as: Value.self)
-    }
-    
-    func encode(to encoder: inout ModelEncoder, from storage: ModelStorage) throws {
-        try encoder.encode(storage.get(self.name, as: Value.self), forKey: self.name)
-    }
-
-    func decode(from decoder: ModelDecoder, to storage: inout ModelStorage) throws {
-        try storage.set(self.name, to: decoder.decode(Value.self, forKey: self.name))
-    }
-}
-
-extension ModelField: ExpressibleByStringLiteral {
-    public init(stringLiteral value: String) {
-        self.init(value)
-    }
+//    func cached(from output: DatabaseOutput) throws -> Any? {
+//        guard output.contains(field: self.name) else {
+//            return nil
+//        }
+//        return try output.decode(field: self.name, as: Value.self)
+//    }
+//    
+//    func encode(to encoder: inout ModelEncoder, from storage: ModelStorage) throws {
+//        try encoder.encode(storage.get(self.name, as: Value.self), forKey: self.name)
+//    }
+//
+//    func decode(from decoder: ModelDecoder, to storage: inout ModelStorage) throws {
+//        try storage.set(self.name, to: decoder.decode(Value.self, forKey: self.name))
+//    }
 }
 
 //extension Model {

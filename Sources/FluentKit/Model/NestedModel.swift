@@ -12,15 +12,18 @@ public struct NestedPath: ExpressibleByStringLiteral {
 }
 extension QueryBuilder {
     public func filter<Value, NestedValue>(
-        _ key: Model.FieldKey<Value>,
+        _ key: KeyPath<Model, Field<Value>>,
         _ path: NestedPath,
         _ method: DatabaseQuery.Filter.Method,
         _ value: NestedValue
     ) -> Self
         where Value: NestedProperty, Value: Codable, NestedValue: Codable
     {
-        let base = Model.field(forKey: key)
-        let field: DatabaseQuery.Field = .field(path: [base.name] + path.path, entity: Model.entity, alias: nil)
+        let field: DatabaseQuery.Field = .field(
+            path: [Model.name(forKey: key)] + path.path,
+            entity: Model.entity,
+            alias: nil
+        )
         return self.filter(field, method, .bind(value))
     }
 }

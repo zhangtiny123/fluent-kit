@@ -33,13 +33,13 @@ struct DefaultModelStorage: ModelStorage {
 }
 
 extension ModelStorage {
-    mutating func cacheOutput<Model>(for model: Model.Type) throws
-        where Model: FluentKit.Model
-    {
-        for property in Model.shared.all {
-            self.cachedOutput[property.name] = try property.cached(from: self.output!)
-        }
-    }
+//    mutating func cacheOutput<Model>(for model: Model.Type) throws
+//        where Model: FluentKit.Model
+//    {
+//        for property in Model.shared.all {
+//            self.cachedOutput[property.name] = try property.cached(from: self.output!)
+//        }
+//    }
 
     public func get<Value>(_ name: String, as value: Value.Type = Value.self) -> Value
         where Value: Codable

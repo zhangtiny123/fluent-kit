@@ -11,19 +11,24 @@ final class PlanetSeed: Migration {
         return .andAllSucceed([milkyWay, andromeda], on: database.eventLoop)
     }
     
-    private func add(_ planets: [String], to galaxy: String, on database: Database) -> EventLoopFuture<Void> {
-        return database.query(Galaxy.self).filter(\.name == galaxy).first().flatMap { galaxy -> EventLoopFuture<Void> in
-            guard let galaxy = galaxy else {
-                return database.eventLoop.makeSucceededFuture(())
+    private func add(
+        _ planets: [String],
+        to galaxyName: String,
+        on database: Database
+    ) -> EventLoopFuture<Void> {
+        return Galaxy.query(on: database)
+            .filter("name", .equal, galaxyName)
+            .first()
+            .flatMap { galaxy -> EventLoopFuture<Void> in
+                guard let galaxy = galaxy else {
+                    return database.eventLoop.makeSucceededFuture(())
+                }
+                let saves = planets.map { name -> EventLoopFuture<Void> in
+                    return Planet(name: name, galaxy: galaxy)
+                        .save(on: database)
+                }
+                return .andAllSucceed(saves, on: database.eventLoop)
             }
-            let saves = planets.map { name -> EventLoopFuture<Void> in
-                let planet = Planet.new()
-                planet.name = name
-                planet.galaxy = galaxy
-                return planet.save(on: database)
-            }
-            return .andAllSucceed(saves, on: database.eventLoop)
-        }
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {

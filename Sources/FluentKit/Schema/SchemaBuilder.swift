@@ -27,39 +27,38 @@ public final class SchemaBuilder<Model> where Model: FluentKit.Model {
     }
     
     public func auto() -> Self {
-        self.schema.createFields = Model.shared.all.map { field in
-            var constraints = field.constraints
+        self.schema.createFields = Model.properties.map { property in
+            var constraints = property.value.constraints
             let type: Any.Type
-            if field.name == Model.shared.id.name {
+            if property.value is Field<Model.IDValue?> {
                 constraints.append(.identifier)
-                type = field.type
+                type = property.value.valueType
             } else {
-                if let optionalType = field.type as? OptionalType.Type {
+                if let optionalType = property.value.valueType as? OptionalType.Type {
                     type = optionalType.wrappedType
                 } else {
-                    type = field.type
-                    if field.constraints.isEmpty {
+                    type = property.value.valueType
+                    if property.value.constraints.isEmpty {
                         constraints.append(.required)
                     }
                 }
             }
             return .definition(
-                name: .string(field.name),
-                dataType: field.dataType ?? .bestFor(type: type),
+                name: .string(property.value.name ?? property.label),
+                dataType: property.value.dataType ?? .bestFor(type: type),
                 constraints: constraints
             )
         }
         return self
     }
     
-    public func field<Value>(_ key: Model.FieldKey<Value>) -> Self
+    public func field<Value>(_ key: KeyPath<Model, Field<Value>>) -> Self
         where Value: Codable
     {
-        let field = Model.field(forKey: key)
         return self.field(.definition(
-            name: .string(field.name),
-            dataType: field.dataType ?? .bestFor(type: Value.self),
-            constraints: field.constraints
+            name: .string(Model.name(forKey: key)),
+            dataType: Model.dataType(forKey: key) ?? .bestFor(type: Value.self),
+            constraints: Model.constraints(forKey: key)
         ))
     }
     
@@ -68,35 +67,29 @@ public final class SchemaBuilder<Model> where Model: FluentKit.Model {
         return self
     }
     
-    public func unique<A>(on a: Model.FieldKey<A>) -> Self
+    public func unique<A>(on a: KeyPath<Model, Field<A>>) -> Self
         where A: Codable
     {
-        let a = Model.field(forKey: a)
         self.schema.constraints.append(.unique(fields: [
-            .string(a.name)
+            .string(Model.name(forKey: a))
         ]))
         return self
     }
     
-    public func unique<A, B>(on a: Model.FieldKey<A>, _ b: Model.FieldKey<B>) -> Self
+    public func unique<A, B>(on a: KeyPath<Model, Field<A>>, _ b: KeyPath<Model, Field<B>>) -> Self
         where A: Codable, B: Codable
     {
-        let a = Model.field(forKey: a)
-        let b = Model.field(forKey: b)
         self.schema.constraints.append(.unique(fields: [
-            .string(a.name), .string(b.name)
+            .string(Model.name(forKey: a)), .string(Model.name(forKey: b))
         ]))
         return self
     }
     
-    public func unique<A, B, C>(on a: Model.FieldKey<A>, _ b: Model.FieldKey<B>,_ c: Model.FieldKey<C>) -> Self
+    public func unique<A, B, C>(on a: KeyPath<Model, Field<A>>, _ b: KeyPath<Model, Field<B>>, _ c: KeyPath<Model, Field<C>>) -> Self
         where A: Codable, B: Codable, C: Codable
     {
-        let a = Model.field(forKey: a)
-        let b = Model.field(forKey: b)
-        let c = Model.field(forKey: c)
         self.schema.constraints.append(.unique(fields: [
-            .string(a.name), .string(b.name), .string(c.name)
+            .string(Model.name(forKey: a)), .string(Model.name(forKey: b)), .string(Model.name(forKey: c))
         ]))
         return self
     }

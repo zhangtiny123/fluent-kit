@@ -1,15 +1,20 @@
 import Foundation
 
-/// Stores information about `Migration`s that have been run.
-/// This information is used to determine which migrations need to be run
-/// when the app boots. It is also used to determine which migrations to revert when
-/// using the `RevertCommand`.
-public struct MigrationLog: Model, Timestampable {
-    public static var shared = MigrationLog()
+public final class MigrationLog: Model {
     public static var entity = "fluent"
-    public let id = Field<Int?>("id")
-    public let name = Field<String>("name")
-    public let batch = Field<Int>("batch")
-    public let createdAt = Field<Date?>("createdAt")
-    public let updatedAt = Field<Date?>("updatedAt")
+
+    @ID() public var id: UUID?
+    @Field() public var name: String
+    @Field() public var batch: Int
+    @Timestamp(.create) public var createdAt: Date?
+    @Timestamp(.update) public var updatedAt: Date?
+
+    public init() { }
+
+    public convenience init(id: UUID? = nil, name: String, batch: Int) {
+        self.init()
+        self.id = id
+        self.name = name
+        self.batch = batch
+    }
 }

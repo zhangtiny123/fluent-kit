@@ -104,10 +104,8 @@ public struct Migrator {
             database = self.databases.default()
         }
         return item.migration.prepare(on: database).flatMap {
-            let log = MigrationLog.new()
-            log.name = item.migration.name
-            log.batch = 1
-            return log.save(on: self.databases.default())
+            return MigrationLog(name: item.migration.name, batch: 1)
+                .save(on: self.databases.default())
         }
     }
     
@@ -120,7 +118,7 @@ public struct Migrator {
         }
         return item.migration.revert(on: database).flatMap { _ -> EventLoopFuture<Void> in
             return self.databases.default().query(MigrationLog.self)
-                .filter(\.name == item.migration.name)
+                .filter(\.$name == item.migration.name)
                 .delete()
         }
     }
@@ -151,16 +149,19 @@ public struct Migrator {
     }
     
     private func preparedMigrations(batch: Int) -> EventLoopFuture<[Migrations.Item]> {
-        return self.databases.default().query(MigrationLog.self).filter(\.batch == batch).all().map { logs -> [Migrations.Item] in
-            return logs.compactMap { log in
-                if let item = self.migrations.storage.filter({ $0.migration.name == log.name }).first {
-                    return item
-                } else {
-                    print("No registered migration found for \(log.name)")
-                    return nil
-                }
-            }.reversed()
-        }
+        return self.databases.default().query(MigrationLog.self)
+            .filter(\.$batch == batch)
+            .all()
+            .map { logs -> [Migrations.Item] in
+                return logs.compactMap { log in
+                    if let item = self.migrations.storage.filter({ $0.migration.name == log.name }).first {
+                        return item
+                    } else {
+                        print("No registered migration found for \(log.name)")
+                        return nil
+                    }
+                }.reversed()
+            }
     }
     
     private func unpreparedMigrations() -> EventLoopFuture<[Migrations.Item]> {
