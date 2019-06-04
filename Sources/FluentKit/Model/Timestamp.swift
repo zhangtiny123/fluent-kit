@@ -1,7 +1,7 @@
-@propertyDelegate
-public final class Timestamp<Value>: Property
-    where Value: Codable
-{
+@_propertyWrapper
+public final class Timestamp: Property {
+    public typealias Value = Date?
+    
     var name: String?
     var dataType: DatabaseSchema.DataType?
     var constraints: [DatabaseSchema.FieldConstraint]
@@ -12,7 +12,7 @@ public final class Timestamp<Value>: Property
 
     let method: Method
 
-    public var value: Value {
+    public var value: Date {
         get { fatalError() }
         set { fatalError() }
     }

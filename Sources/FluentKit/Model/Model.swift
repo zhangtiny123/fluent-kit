@@ -4,7 +4,7 @@ public protocol AnyModel: class, Codable {
 
 public protocol Model: AnyModel {
     associatedtype IDValue: Codable & Hashable
-    var id: IDValue? { get set }
+    var id: ID<IDValue> { get set }
     init()
 
     // MARK: Lifecycle

@@ -1,4 +1,4 @@
-@propertyDelegate
+@_propertyWrapper
 public struct Children<Value>
     where Value: Model
 {

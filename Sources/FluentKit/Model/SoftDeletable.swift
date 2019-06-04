@@ -1,4 +1,4 @@
-@propertyDelegate
+@_propertyWrapper
 public final class SoftDelete<Value>: Property
     where Value: Codable
 {

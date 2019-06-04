@@ -2,42 +2,35 @@ public enum ModelError: Error {
     case missingField(name: String)
 }
 
-@propertyDelegate
+@_propertyWrapper
 public final class Field<Value>: Property
     where Value: Codable
 {
-    public var type: Any.Type {
-        return Value.self
-    }
-
     public var value: Value {
         get { fatalError() }
         set { fatalError() }
     }
     
-    public var constraints: [DatabaseSchema.FieldConstraint]
+    internal var constraints: [DatabaseSchema.FieldConstraint]
     
-    public let name: String?
-    
-//    public var path: [String] {
-//        return self.model.storage.path + [self.name]
-//    }
+    internal let name: String?
 
-    internal let dataType: DatabaseSchema.DataType?
+    internal var dataType: DatabaseSchema.DataType?
 
     #warning("TODO: auto migrate")
     struct Interface: Codable {
         let name: String
     }
 
-    public convenience init() {
-        self.init(dataType: nil)
+    public init(_ value: Value.Type) {
+        self.name = nil
+        self.dataType = nil
+        self.constraints = []
     }
 
-    public init(dataType: DatabaseSchema.DataType?) {
-        self.name = nil
+    public func dataType(_ dataType: DatabaseSchema.DataType?) -> Self {
         self.dataType = dataType
-        self.constraints = []
+        return self
     }
 
 //    func cached(from output: DatabaseOutput) throws -> Any? {

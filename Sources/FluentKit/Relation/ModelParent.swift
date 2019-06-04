@@ -1,4 +1,4 @@
-@propertyDelegate
+@_propertyWrapper
 public final class Parent<Value>: Property
     where Value: Model
 {

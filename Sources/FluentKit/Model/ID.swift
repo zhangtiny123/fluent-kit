@@ -1,4 +1,4 @@
-@propertyDelegate
+@_propertyWrapper
 public final class ID<Value>: Property
     where Value: Codable
 {
@@ -14,7 +14,7 @@ public final class ID<Value>: Property
         set { fatalError() }
     }
 
-    public init() {
+    public init(_ value: Value.Type) {
         self.name = nil
         self.dataType = nil
         self.constraints = []
